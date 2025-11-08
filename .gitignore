@@ -1,0 +1,73 @@
+### Java ###
+*.class
+*.log
+*.tmp
+*.out
+*.war
+*.ear
+
+### Maven ###
+target/
+.mvn/wrapper/maven-wrapper.jar
+
+### Spring Boot ###
+*.cache
+*.h2.db
+*.db
+*.sqlite*
+*.pid
+*.jar
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+out/
+
+### VS Code ###
+.vscode/
+
+### Logs ###
+logs/
+*.log
+/logs/**
+
+### OS ###
+.DS_Store
+Thumbs.db
+
+### Env files - SENSITIVE CREDENTIALS 🚫 ###
+.env
+.env.local
+.env.*.local
+*.env
+
+# Secret properties (NO credenciales públicas)
+src/main/resources/.env.properties
+application.properties.bak
+
+### Postgres local ###
+pgdata/
+postgres-data/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### Node & Frontend ###
+node_modules/
+.next/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+### Testing ###
+coverage/
+test-output/
