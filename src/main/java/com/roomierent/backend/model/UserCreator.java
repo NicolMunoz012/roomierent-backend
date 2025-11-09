@@ -2,7 +2,7 @@ package com.roomierent.backend.model;
 
 import com.roomierent.backend.dto.SignupRequest;
 import com.roomierent.backend.model.entity.User;
-import com.roomierent.backend.model.entity.UserRole;
+import com.roomierent.backend.model.entity.Role;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -31,7 +31,7 @@ public class UserCreator {
                 .name(name)
                 .email(email.toLowerCase())
                 .password(passwordEncoder.encode(password))
-                .role(UserRole.TENANT)
+                .role(Role.TENANT)
                 .active(true)
                 .build();
     }
@@ -41,12 +41,12 @@ public class UserCreator {
                 .name(name)
                 .email(email.toLowerCase())
                 .password(passwordEncoder.encode(password))
-                .role(UserRole.LANDLORD)
+                .role(Role.LANDLORD)
                 .active(true)
                 .build();
     }
 
-    public User createInactiveUser(String name, String email, String password, UserRole role) {
+    public User createInactiveUser(String name, String email, String password, Role role) {
         return User.builder()
                 .name(name)
                 .email(email.toLowerCase())

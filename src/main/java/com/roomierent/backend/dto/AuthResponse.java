@@ -1,6 +1,6 @@
 package com.roomierent.backend.dto;
 
-import com.roomierent.backend.model.entity.UserRole;
+import com.roomierent.backend.model.entity.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,7 +15,7 @@ public class AuthResponse {
     private Long id;
     private String email;
     private String name;
-    private UserRole role;
+    private Role role;
     private String token;  // JWT token
     private String message;
 }

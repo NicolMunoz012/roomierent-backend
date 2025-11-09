@@ -1,6 +1,6 @@
 package com.roomierent.backend.dto;
 
-import com.roomierent.backend.model.entity.UserRole;
+import com.roomierent.backend.model.entity.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -27,5 +27,5 @@ public class SignupRequest {
     private String password;
 
     @NotNull(message = "El rol es requerido")
-    private UserRole role;
+    private Role role;
 }

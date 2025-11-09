@@ -1,6 +1,6 @@
 package com.roomierent.backend.model.entity;
 
-public enum UserRole {
+public enum Role {
     TENANT,
     LANDLORD
 }

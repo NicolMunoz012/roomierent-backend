@@ -1,6 +1,6 @@
 package com.roomierent.backend.dto;
 
-import com.roomierent.backend.model.entity.UserRole;
+import com.roomierent.backend.model.entity.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,7 +17,7 @@ public class UserDTO {
     private Long id;
     private String email;
     private String name;
-    private UserRole role;
+    private Role role;
     private Boolean active;
     private LocalDateTime createdAt;
 }

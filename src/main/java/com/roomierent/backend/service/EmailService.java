@@ -34,7 +34,7 @@ public class EmailService {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(fromEmail);
         message.setTo(toEmail);
-        message.setSubject("Restablecimiento de Contraseña - RentSpace"); // Asunto en español
+        message.setSubject("Restablecimiento de Contraseña - RoomieRent"); // Asunto en español
 
         // CUERPO DEL EMAIL EN ESPAÑOL
         message.setText(
