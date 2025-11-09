@@ -20,15 +20,15 @@ public class RecommendationManager {
     private final UserPreferencesRepository preferencesRepository;
     private final PropertyRepository propertyRepository;
     private final PropertyGraph propertyGraph;
-    private final List<RecommendationStrategy> strategies;
-    private RecommendationStrategy currentStrategy;
+    private final List<PropertyRecommender> strategies;
+    private PropertyRecommender currentStrategy;
 
     public RecommendationManager(
             UserRepository userRepository,
             UserPreferencesRepository preferencesRepository,
             PropertyRepository propertyRepository,
             PropertyGraph propertyGraph,
-            ScoreBasedRecommendationStrategy scoreBasedStrategy) {
+            ScoreBasedPropertyRecommender scoreBasedStrategy) {
 
         this.userRepository = userRepository;
         this.preferencesRepository = preferencesRepository;
@@ -148,7 +148,7 @@ public class RecommendationManager {
      * @param strategyName Nombre de la estrategia
      */
     public void setStrategy(String strategyName) {
-        for (RecommendationStrategy strategy : strategies) {
+        for (PropertyRecommender strategy : strategies) {
             if (strategy.getStrategyName().equalsIgnoreCase(strategyName)) {
                 this.currentStrategy = strategy;
                 System.out.println("🔄 Estrategia cambiada a: " + strategyName);
@@ -163,7 +163,7 @@ public class RecommendationManager {
      */
     public List<String> getAvailableStrategies() {
         List<String> strategyNames = new ArrayList<>();
-        for (RecommendationStrategy strategy : strategies) {
+        for (PropertyRecommender strategy : strategies) {
             strategyNames.add(strategy.getStrategyName());
         }
         return strategyNames;

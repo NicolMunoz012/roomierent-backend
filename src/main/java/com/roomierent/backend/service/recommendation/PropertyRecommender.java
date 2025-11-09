@@ -5,13 +5,7 @@ import com.roomierent.backend.model.entity.UserPreferences;
 
 import java.util.List;
 
-/**
- * PATRÓN STRATEGY
- *
- * Interfaz para diferentes estrategias de recomendación
- * Permite cambiar el algoritmo de recomendación en tiempo de ejecución
- */
-public interface RecommendationStrategy {
+public interface PropertyRecommender {
 
     /**
      * Recomienda propiedades basándose en las preferencias del usuario

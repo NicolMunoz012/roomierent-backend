@@ -8,19 +8,13 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * PATRÓN STRATEGY - Implementación concreta
- * ESTRUCTURA DE DATOS: Priority Queue (Heap)
- *
- * Estrategia de recomendación basada en scoring ponderado
- * Calcula un score para cada propiedad basado en las preferencias del usuario
- */
+
 @Component
-public class ScoreBasedRecommendationStrategy implements RecommendationStrategy {
+public class ScoreBasedPropertyRecommender implements PropertyRecommender {
 
     private final PropertyPriorityQueue priorityQueue;
 
-    public ScoreBasedRecommendationStrategy() {
+    public ScoreBasedPropertyRecommender() {
         this.priorityQueue = new PropertyPriorityQueue();
     }
 

@@ -10,9 +10,11 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
 
+    // Injected email address for the sender
     @Value("${spring.mail.username}")
     private String fromEmail;
 
+    // Injected URL for the frontend application
     @Value("${app.frontend.url}")
     private String frontendUrl;
 
@@ -21,7 +23,10 @@ public class EmailService {
     }
 
     /**
-     * Envía email de recuperación de contraseña
+     * Sends a password reset email
+     *
+     * @param toEmail The recipient's email address
+     * @param token The password reset token
      */
     public void sendPasswordResetEmail(String toEmail, String token) {
         String resetLink = frontendUrl + "/reset-password?token=" + token;
@@ -29,20 +34,23 @@ public class EmailService {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(fromEmail);
         message.setTo(toEmail);
-        message.setSubject("Password Reset - RentSpace");
+        message.setSubject("Restablecimiento de Contraseña - RentSpace"); // Asunto en español
+
+        // CUERPO DEL EMAIL EN ESPAÑOL
         message.setText(
-                "Hello,\n\n" +
-                        "You have requested to reset your password for RentSpace.\n\n" +
-                        "Click the link below to reset your password:\n" +
+                "Hola,\n\n" +
+                        "Usted ha solicitado restablecer la contraseña de su cuenta en RentSpace.\n\n" +
+                        "Haga clic en el siguiente enlace para restablecer su contraseña:\n" +
                         resetLink + "\n\n" +
-                        "This link will expire in 1 hour.\n\n" +
-                        "If you did not request this, please ignore this email.\n\n" +
-                        "Best regards,\n" +
-                        "RentSpace Team"
+                        "Este enlace expirará en 1 hora.\n\n" +
+                        "Si usted no solicitó este cambio, por favor ignore este correo.\n\n" +
+                        "Saludos cordiales,\n" +
+                        "El equipo de RoomieRent"
         );
 
         mailSender.send(message);
 
+        // Log en la consola para el desarrollador (se mantiene en español/spanglish por contexto)
         System.out.println("✅ Email de recuperación enviado a: " + toEmail);
     }
 }
