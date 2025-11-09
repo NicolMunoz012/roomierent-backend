@@ -6,7 +6,7 @@ import com.roomierent.backend.dto.UserPreferencesResponse;
 import com.roomierent.backend.model.entity.Property;
 import com.roomierent.backend.service.PropertyService;
 import com.roomierent.backend.service.UserPreferencesService;
-import com.roomierent.backend.service.recommendation.RecommendationFacade;
+import com.roomierent.backend.service.recommendation.RecommendationManager;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,14 +21,14 @@ import java.util.stream.Collectors;
 @CrossOrigin(origins = "http://localhost:3000")
 public class RecommendationController {
 
-    private final RecommendationFacade recommendationFacade;
+    private final RecommendationManager recommendationManager;
     private final UserPreferencesService preferencesService;
     private final PropertyService propertyService;
 
-    public RecommendationController(RecommendationFacade recommendationFacade,
+    public RecommendationController(RecommendationManager recommendationManager,
                                     UserPreferencesService preferencesService,
                                     PropertyService propertyService) {
-        this.recommendationFacade = recommendationFacade;
+        this.recommendationManager = recommendationManager;
         this.preferencesService = preferencesService;
         this.propertyService = propertyService;
     }
@@ -47,7 +47,7 @@ public class RecommendationController {
 
             System.out.println("📥 Petición de recomendaciones para: " + email);
 
-            List<Property> recommendations = recommendationFacade.getRecommendationsForUser(email, limit);
+            List<Property> recommendations = recommendationManager.getRecommendationsForUser(email, limit);
 
             List<PropertyResponse> response = recommendations.stream()
                     .map(this::convertToResponse)
@@ -74,7 +74,7 @@ public class RecommendationController {
         try {
             System.out.println("📥 Petición de propiedades similares a ID: " + propertyId);
 
-            List<Property> similarProperties = recommendationFacade.getSimilarProperties(propertyId, limit);
+            List<Property> similarProperties = recommendationManager.getSimilarProperties(propertyId, limit);
 
             List<PropertyResponse> response = similarProperties.stream()
                     .map(this::convertToResponse)
@@ -148,7 +148,7 @@ public class RecommendationController {
         try {
             System.out.println("📥 Petición para construir grafo de similitud");
 
-            recommendationFacade.buildPropertyGraph();
+            recommendationManager.buildPropertyGraph();
 
             Map<String, String> response = new HashMap<>();
             response.put("message", "Grafo de similitud construido exitosamente");
@@ -171,7 +171,7 @@ public class RecommendationController {
      */
     @GetMapping("/strategies")
     public ResponseEntity<List<String>> getStrategies() {
-        List<String> strategies = recommendationFacade.getAvailableStrategies();
+        List<String> strategies = recommendationManager.getAvailableStrategies();
         return ResponseEntity.ok(strategies);
     }
 

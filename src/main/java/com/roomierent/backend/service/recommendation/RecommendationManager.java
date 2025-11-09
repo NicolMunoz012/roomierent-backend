@@ -12,19 +12,9 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * PATRÓN FACADE
- *
- * Proporciona una interfaz simple para un subsistema complejo de recomendaciones
- * Oculta la complejidad de múltiples estrategias, estructuras de datos y algoritmos
- *
- * Responsabilidades:
- * - Gestionar diferentes estrategias de recomendación
- * - Construir y mantener el grafo de similitud entre propiedades
- * - Proporcionar métodos simples para obtener recomendaciones
- */
+
 @Service
-public class RecommendationFacade {
+public class RecommendationManager {
 
     private final UserRepository userRepository;
     private final UserPreferencesRepository preferencesRepository;
@@ -33,7 +23,7 @@ public class RecommendationFacade {
     private final List<RecommendationStrategy> strategies;
     private RecommendationStrategy currentStrategy;
 
-    public RecommendationFacade(
+    public RecommendationManager(
             UserRepository userRepository,
             UserPreferencesRepository preferencesRepository,
             PropertyRepository propertyRepository,
@@ -89,14 +79,6 @@ public class RecommendationFacade {
         return recommendations;
     }
 
-    /**
-     * Obtiene propiedades similares a una dada
-     * Usa el grafo de similitud
-     *
-     * @param propertyId ID de la propiedad base
-     * @param limit Número máximo de propiedades similares
-     * @return Lista de propiedades similares
-     */
     public List<Property> getSimilarProperties(Long propertyId, int limit) {
         System.out.println("🔍 Buscando propiedades similares a ID: " + propertyId);
 

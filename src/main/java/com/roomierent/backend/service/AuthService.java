@@ -4,7 +4,7 @@ import com.roomierent.backend.dto.AuthResponse;
 import com.roomierent.backend.dto.LoginRequest;
 import com.roomierent.backend.dto.SignupRequest;
 import com.roomierent.backend.model.entity.User;
-import com.roomierent.backend.service.factory.UserFactory;
+import com.roomierent.backend.model.UserCreator;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -18,18 +18,18 @@ import org.springframework.stereotype.Service;
 public class AuthService {
 
     private final UserService userService;
-    private final UserFactory userFactory;
+    private final UserCreator userCreator;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
 
     public AuthService(
             UserService userService,
-            UserFactory userFactory,
+            UserCreator userCreator,
             JwtService jwtService,
             PasswordEncoder passwordEncoder
     ) {
         this.userService = userService;
-        this.userFactory = userFactory;
+        this.userCreator = userCreator;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
     }
@@ -44,7 +44,7 @@ public class AuthService {
         }
 
         // Crear usuario usando Factory
-        User newUser = userFactory.createUser(request);
+        User newUser = userCreator.createUser(request);
 
         // Guardar en la base de datos
         User savedUser = userService.saveUser(newUser);
