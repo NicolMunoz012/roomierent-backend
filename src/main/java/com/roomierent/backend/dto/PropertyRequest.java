@@ -62,7 +62,7 @@ public class PropertyRequest {
     @DecimalMin(value = "1.0", message = "El área debe ser mayor a 0")
     private Double area;
 
-    private List<String> amenities; // ["wifi", "parking", "pool", etc.]
+    private List<String> amenities;
 
-    private List<String> imageUrls; // URLs temporales o base64
+    private List<String> imageUrls;
 }

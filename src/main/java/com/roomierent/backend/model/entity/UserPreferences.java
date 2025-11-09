@@ -11,10 +11,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-/**
- * Entidad que almacena las preferencias de búsqueda de un usuario
- * Para el algoritmo de recomendación con IA
- */
 @Entity
 @Table(name = "user_preferences")
 @Data

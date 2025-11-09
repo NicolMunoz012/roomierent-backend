@@ -25,10 +25,10 @@ public interface PropertyRepository extends JpaRepository<Property, Long> {
 
     List<Property> findByType(PropertyType type);
 
-    @Query("SELECT p FROM Property p WHERE p.status = 'DISPONIBLE' ORDER BY p.createdAt DESC")
+    @Query("SELECT p FROM Property p WHERE p.status = 'AVAILABLE' ORDER BY p.createdAt DESC")
     List<Property> findAvailableProperties();
 
-    @Query("SELECT p FROM Property p WHERE p.status = 'DISPONIBLE' " +
+    @Query("SELECT p FROM Property p WHERE p.status = 'AVAILABLE' " +
             "AND p.price BETWEEN :minPrice AND :maxPrice " +
             "AND p.city = :city " +
             "ORDER BY p.createdAt DESC")
@@ -38,11 +38,10 @@ public interface PropertyRepository extends JpaRepository<Property, Long> {
             @Param("maxPrice") BigDecimal maxPrice
     );
 
-    // Método para contar propiedades por propietario
+
     @Query("SELECT COUNT(p) FROM Property p WHERE p.owner.id = :userId")
     long countByOwnerId(@Param("userId") Long userId);
 
-    // Método para eliminar propiedades por propietario
     @Modifying
     @Transactional
     @Query("DELETE FROM Property p WHERE p.owner.id = :userId")
