@@ -37,7 +37,7 @@ public class AuthController {
     @PostMapping("/signup")
     public ResponseEntity<AuthResponse> signup(@Valid @RequestBody SignupRequest request) {
         try {
-            System.out.println("📥 Recibiendo petición de signup para: " + request.getEmail());
+            System.out.println("📥 Recibiendo petición de registro para: " + request.getEmail());
 
             AuthResponse response = authService.signup(request);
 
@@ -46,10 +46,10 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
         } catch (RuntimeException e) {
-            System.err.println("❌ Error en signup: " + e.getMessage());
+            System.err.println("❌ Error en registrarse: " + e.getMessage());
 
             // Si el email ya existe
-            if (e.getMessage().contains("ya está registrado")) {
+            if (e.getMessage().contains("El correo ya existe")) {
                 return ResponseEntity
                         .status(HttpStatus.CONFLICT) // 409 Conflict
                         .body(AuthResponse.builder()
@@ -64,7 +64,7 @@ public class AuthController {
                             .message(e.getMessage())
                             .build());
         } catch (Exception e) {
-            System.err.println("❌ Error inesperado: " + e.getMessage());
+            System.err.println("❌ Error: " + e.getMessage());
             e.printStackTrace();
 
             return ResponseEntity
@@ -78,16 +78,16 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         try {
-            System.out.println("📥 Recibiendo petición de login para: " + request.getEmail());
+            System.out.println("📥 Recibiendo petición de Iniciar Sesión para: " + request.getEmail());
 
             AuthResponse response = authService.login(request);
 
-            System.out.println("✅ Login exitoso: " + response.getEmail());
+            System.out.println("✅ Inicio de Sesión exitoso: " + response.getEmail());
 
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            System.err.println("❌ Error en login: " + e.getMessage());
+            System.err.println("❌ Error en Inicio de Sesión: " + e.getMessage());
 
             return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED)
@@ -119,7 +119,7 @@ public class AuthController {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            System.err.println("❌ Error en forgot-password: " + e.getMessage());
+            System.err.println("❌ Error en ´¿Olvidó su contraseña?´: " + e.getMessage());
 
             // Por seguridad, siempre devolvemos el mismo mensaje aunque el email no exista
             Map<String, String> response = new HashMap<>();
@@ -146,7 +146,7 @@ public class AuthController {
             return ResponseEntity.ok(response);
 
         } catch (RuntimeException e) {
-            System.err.println("❌ Error en reset-password: " + e.getMessage());
+            System.err.println("❌ Error en restablecer contraseña: " + e.getMessage());
 
             Map<String, String> response = new HashMap<>();
             response.put("message", e.getMessage());
@@ -186,13 +186,7 @@ public class AuthController {
         }
     }
 
-    /**
-     * Extrae el email del header Authorization (temporal)
-     * TODO: Implementar extracción real del JWT
-     */
     private String extractEmailFromAuth(String authHeader) {
-        // Por ahora, asumimos que el frontend envía el email directamente
-        // Luego lo extraeremos del token JWT
         return authHeader.replace("Bearer ", "");
     }
 }

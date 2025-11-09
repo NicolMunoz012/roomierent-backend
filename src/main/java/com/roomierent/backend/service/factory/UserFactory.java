@@ -39,7 +39,7 @@ public class UserFactory {
                 .name(name)
                 .email(email.toLowerCase())
                 .password(passwordEncoder.encode(password))
-                .role(UserRole.ARRENDATARIO)
+                .role(UserRole.TENANT)
                 .active(true)
                 .build();
     }
@@ -52,7 +52,7 @@ public class UserFactory {
                 .name(name)
                 .email(email.toLowerCase())
                 .password(passwordEncoder.encode(password))
-                .role(UserRole.PROPIETARIO)
+                .role(UserRole.LANDLORD)
                 .active(true)
                 .build();
     }
