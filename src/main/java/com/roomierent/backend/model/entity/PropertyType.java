@@ -1,9 +1,9 @@
 package com.roomierent.backend.model.entity;
 
 public enum PropertyType {
-    CASA,
-    APARTAMENTO,
-    HABITACION,
-    ESTUDIO,
-    BODEGA
+    HOUSE,
+    APARTMENT,
+    ROOM,
+    STUDIO,
+    STORAGE_UNIT
 }

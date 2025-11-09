@@ -17,7 +17,7 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable()) // Deshabilitamos CSRF para desarrollo
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll() // Permitimos todas las peticiones por ahora
+                        .anyRequest().permitAll()
                 );
 
         return http.build();

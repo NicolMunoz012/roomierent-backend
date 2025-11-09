@@ -41,7 +41,7 @@ public class Property {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
-    private PropertyStatus status = PropertyStatus.DISPONIBLE;
+    private PropertyStatus status = PropertyStatus.AVAILABLE;
 
     // Ubicación
     @Column(nullable = false)

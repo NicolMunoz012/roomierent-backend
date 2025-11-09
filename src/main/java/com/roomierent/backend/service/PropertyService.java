@@ -45,7 +45,7 @@ public class PropertyService {
                 .description(request.getDescription())
                 .price(request.getPrice())
                 .type(request.getType())
-                .status(PropertyStatus.DISPONIBLE)
+                .status(PropertyStatus.AVAILABLE)
                 .address(request.getAddress())
                 .city(request.getCity())
                 .neighborhood(request.getNeighborhood())

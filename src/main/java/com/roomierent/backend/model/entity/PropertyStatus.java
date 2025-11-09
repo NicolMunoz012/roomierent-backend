@@ -1,8 +1,8 @@
 package com.roomierent.backend.model.entity;
 
 public enum PropertyStatus {
-    DISPONIBLE,     // Disponible para arrendar
-    ARRENDADA,      // Ya está arrendada
-    MANTENIMIENTO,  // En mantenimiento
-    INACTIVA        // Desactivada por el propietario
+    AVAILABLE,     // Disponible para arrendar
+    RENTED,      // Ya está arrendada
+    MAINTENANCE,  // En mantenimiento
+    INACTIVE     // Desactivada por el propietario
 }

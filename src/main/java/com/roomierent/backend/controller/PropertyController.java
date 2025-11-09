@@ -23,7 +23,6 @@ public class PropertyController {
     }
 
     /**
-     * POST /api/properties
      * Crea una nueva propiedad
      */
     @PostMapping
