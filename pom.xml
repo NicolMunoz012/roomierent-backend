@@ -45,6 +45,13 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- H2 (base de datos en memoria para desarrollo) -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
         <!-- Validation (para validar DTOs) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
