@@ -37,12 +37,15 @@ public class PasswordResetService {
      */
     @Transactional
     public void initiatePasswordReset(ForgotPasswordRequest request) {
-        // Buscar usuario por email
-        User user = userService.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        // Buscar usuario por email (ya lanza excepción si no existe)
+        User user = userService.findByEmail(request.getEmail());
 
         // Eliminar tokens anteriores del usuario
-        tokenRepository.deleteByUser(user);
+        try {
+            tokenRepository.deleteByUserId(user.getId());
+        } catch (Exception e) {
+            // Si no hay tokens previos, continuar
+        }
 
         // Generar nuevo token
         String token = UUID.randomUUID().toString();

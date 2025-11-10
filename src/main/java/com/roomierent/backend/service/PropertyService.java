@@ -31,8 +31,7 @@ public class PropertyService {
     @Transactional
     public PropertyResponse createProperty(PropertyRequest request, String ownerEmail) {
         // Buscar el propietario
-        User owner = userService.findByEmail(ownerEmail)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        User owner = userService.findByEmail(ownerEmail);
 
         // Convertir lista de amenities a JSON
         String amenitiesJson = request.getAmenities() != null
@@ -107,8 +106,7 @@ public class PropertyService {
      * Obtiene las propiedades de un propietario
      */
     public List<PropertyResponse> getPropertiesByOwner(String ownerEmail) {
-        User owner = userService.findByEmail(ownerEmail)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        User owner = userService.findByEmail(ownerEmail);
 
         return propertyRepository.findByOwner(owner).stream()
                 .map(this::convertToResponse)
@@ -118,8 +116,7 @@ public class PropertyService {
      * Obtiene el número de propiedades de un propietario
      */
     public long getPropertyCountByOwner(String ownerEmail) {
-        User owner = userService.findByEmail(ownerEmail)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        User owner = userService.findByEmail(ownerEmail);
 
         return propertyRepository.countByOwnerId(owner.getId());
     }

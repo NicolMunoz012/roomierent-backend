@@ -68,8 +68,7 @@ public class AuthService {
      */
     public AuthResponse login(LoginRequest request) {
         // Buscar usuario por email
-        User user = userService.findByEmail(request.getEmail())
-                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
+        User user = userService.findByEmail(request.getEmail());
 
         // Verificar contraseña
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {

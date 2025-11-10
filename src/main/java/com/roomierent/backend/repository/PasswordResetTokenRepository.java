@@ -1,8 +1,10 @@
 package com.roomierent.backend.repository;
 
 import com.roomierent.backend.model.entity.PasswordResetToken;
-import com.roomierent.backend.model.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -12,5 +14,7 @@ public interface PasswordResetTokenRepository extends JpaRepository<PasswordRese
 
     Optional<PasswordResetToken> findByToken(String token);
 
-    void deleteByUser(User user);
+    @Modifying
+    @Query("DELETE FROM PasswordResetToken p WHERE p.user.id = :userId")
+    void deleteByUserId(@Param("userId") Long userId);
 }

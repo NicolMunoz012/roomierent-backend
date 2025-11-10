@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,70 +23,33 @@ public class PropertyController {
         this.propertyService = propertyService;
     }
 
-    /**
-     * Crea una nueva propiedad
-     */
     @PostMapping
     public ResponseEntity<PropertyResponse> createProperty(
-            @Valid @RequestBody PropertyRequest request,
-            @RequestHeader("Authorization") String authHeader
+            @Valid @RequestBody PropertyRequest request
     ) {
-        try {
-            // Extraer email del token (temporal, luego usaremos JWT)
-            String email = extractEmailFromAuth(authHeader);
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName(); // ✅ EMAIL real del usuario autenticado
 
-            System.out.println("📥 Creando propiedad para: " + email);
+        System.out.println("📥 Creando propiedad para: " + email);
 
-            PropertyResponse response = propertyService.createProperty(request, email);
-
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-
-        } catch (Exception e) {
-            System.err.println("❌ Error creando propiedad: " + e.getMessage());
-            throw new RuntimeException("Error al crear la propiedad: " + e.getMessage());
-        }
+        PropertyResponse response = propertyService.createProperty(request, email);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    /**
-     * GET /api/properties
-     * Obtiene todas las propiedades disponibles
-     */
     @GetMapping
     public ResponseEntity<List<PropertyResponse>> getAllProperties() {
-        List<PropertyResponse> properties = propertyService.getAllAvailableProperties();
-        return ResponseEntity.ok(properties);
+        return ResponseEntity.ok(propertyService.getAllAvailableProperties());
     }
 
-    /**
-     * GET /api/properties/{id}
-     * Obtiene una propiedad por ID
-     */
     @GetMapping("/{id}")
     public ResponseEntity<PropertyResponse> getPropertyById(@PathVariable Long id) {
-        PropertyResponse property = propertyService.getPropertyById(id);
-        return ResponseEntity.ok(property);
+        return ResponseEntity.ok(propertyService.getPropertyById(id));
     }
 
-    /**
-     * GET /api/properties/my-properties
-     * Obtiene las propiedades del usuario autenticado
-     */
     @GetMapping("/my-properties")
-    public ResponseEntity<List<PropertyResponse>> getMyProperties(
-            @RequestHeader("Authorization") String authHeader
-    ) {
-        String email = extractEmailFromAuth(authHeader);
-        List<PropertyResponse> properties = propertyService.getPropertiesByOwner(email);
-        return ResponseEntity.ok(properties);
-    }
-
-    /**
-     * Extrae el email del header Authorization (temporal)
-     * TODO: Implementar extracción real del JWT
-     */
-    private String extractEmailFromAuth(String authHeader) {
-        // Por ahora, asumimos que el frontend envía el email
-        // Luego lo extraeremos del token JWT
-        return authHeader.replace("Bearer ", "");
+    public ResponseEntity<List<PropertyResponse>> getMyProperties() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName(); // ✅ EMAIL real
+        return ResponseEntity.ok(propertyService.getPropertiesByOwner(email));
     }
 }

@@ -25,10 +25,18 @@ public class JwtService {
     private long jwtExpiration;
 
     /**
-     * Extrae el email (subject) del token
+     * Extrae el username/email del token
      */
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
+    }
+
+    /**
+     * Alias de extractUsername() para mayor claridad semántica
+     * (usado en JwtAuthenticationFilter)
+     */
+    public String extractEmail(String token) {
+        return extractUsername(token);
     }
 
     /**
@@ -40,21 +48,30 @@ public class JwtService {
     }
 
     /**
-     * Genera un token JWT para un usuario
+     * Genera un token JWT para un usuario (UserDetails)
      */
     public String generateToken(UserDetails userDetails) {
         return generateToken(new HashMap<>(), userDetails);
     }
 
     /**
-     * Genera un token JWT con claims adicionales
+     * Genera un token JWT desde un email (String)
+     * (usado en AuthController y AuthService)
+     */
+    public String generateToken(String email) {
+        Map<String, Object> extraClaims = new HashMap<>();
+        return buildTokenFromEmail(extraClaims, email, jwtExpiration);
+    }
+
+    /**
+     * Genera un token JWT con claims adicionales (UserDetails)
      */
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
         return buildToken(extraClaims, userDetails, jwtExpiration);
     }
 
     /**
-     * Construye el token JWT
+     * Construye el token JWT desde UserDetails
      */
     private String buildToken(
             Map<String, Object> extraClaims,
@@ -72,11 +89,38 @@ public class JwtService {
     }
 
     /**
-     * Valida si el token es válido para un usuario
+     * Construye el token JWT desde un email (String)
+     */
+    private String buildTokenFromEmail(
+            Map<String, Object> extraClaims,
+            String email,
+            long expiration
+    ) {
+        return Jwts
+                .builder()
+                .setClaims(extraClaims)
+                .setSubject(email)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + expiration))
+                .signWith(getSignInKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    /**
+     * Valida si el token es válido para un usuario (UserDetails)
      */
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
         return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
+    }
+
+    /**
+     * Valida si el token es válido para un email (String)
+     * (usado en validaciones alternativas)
+     */
+    public boolean isTokenValid(String token, String email) {
+        final String tokenEmail = extractEmail(token);
+        return (tokenEmail.equals(email)) && !isTokenExpired(token);
     }
 
     /**
@@ -106,10 +150,9 @@ public class JwtService {
     }
 
     /**
-     * Obtiene la clave de firma (sin decodificar Base64, usa directamente los bytes)
+     * Obtiene la clave de firma
      */
     private SecretKey getSignInKey() {
-        // Convierte el string directamente a bytes y genera una clave HMAC
         byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
         return Keys.hmacShaKeyFor(keyBytes);
     }

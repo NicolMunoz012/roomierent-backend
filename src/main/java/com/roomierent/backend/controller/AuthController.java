@@ -8,9 +8,12 @@ import com.roomierent.backend.dto.LoginRequest;
 import com.roomierent.backend.dto.SignupRequest;
 import com.roomierent.backend.service.AuthService;
 import com.roomierent.backend.service.UserService;
+import com.roomierent.backend.service.JwtService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -24,14 +27,16 @@ public class AuthController {
     private final AuthService authService;
     private final PasswordResetService passwordResetService;
     private final UserService userService;
+    private final JwtService jwtService;
 
-    // Constructor con todas las dependencias
     public AuthController(AuthService authService,
                           PasswordResetService passwordResetService,
-                          UserService userService) {
+                          UserService userService,
+                          JwtService jwtService) {
         this.authService = authService;
         this.passwordResetService = passwordResetService;
         this.userService = userService;
+        this.jwtService = jwtService;
     }
 
     @PostMapping("/signup")
@@ -48,16 +53,14 @@ public class AuthController {
         } catch (RuntimeException e) {
             System.err.println("❌ Error en registrarse: " + e.getMessage());
 
-            // Si el email ya existe
             if (e.getMessage().contains("El correo ya existe")) {
                 return ResponseEntity
-                        .status(HttpStatus.CONFLICT) // 409 Conflict
+                        .status(HttpStatus.CONFLICT)
                         .body(AuthResponse.builder()
                                 .message(e.getMessage())
                                 .build());
             }
 
-            // Otros errores
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body(AuthResponse.builder()
@@ -102,10 +105,6 @@ public class AuthController {
         return ResponseEntity.ok("Backend funcionando correctamente! 🚀");
     }
 
-    /**
-     * POST /api/auth/forgot-password
-     * Solicita recuperación de contraseña
-     */
     @PostMapping("/forgot-password")
     public ResponseEntity<Map<String, String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
         try {
@@ -121,7 +120,6 @@ public class AuthController {
         } catch (Exception e) {
             System.err.println("❌ Error en ´¿Olvidó su contraseña?´: " + e.getMessage());
 
-            // Por seguridad, siempre devolvemos el mismo mensaje aunque el email no exista
             Map<String, String> response = new HashMap<>();
             response.put("message", "Si el correo existe, recibirás instrucciones para recuperar tu contraseña");
 
@@ -129,10 +127,6 @@ public class AuthController {
         }
     }
 
-    /**
-     * POST /api/auth/reset-password
-     * Resetea la contraseña con el token
-     */
     @PostMapping("/reset-password")
     public ResponseEntity<Map<String, String>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         try {
@@ -157,14 +151,74 @@ public class AuthController {
 
     /**
      * DELETE /api/auth/delete-account
-     * Elimina la cuenta del usuario y todas sus propiedades
+     * Elimina la cuenta del usuario autenticado
+     *
+     * Requiere JWT en el header: Authorization: Bearer {token}
      */
     @DeleteMapping("/delete-account")
-    public ResponseEntity<Map<String, String>> deleteAccount(
+    public ResponseEntity<Map<String, String>> deleteAccount() {
+        try {
+            // Obtener el usuario autenticado desde el SecurityContext
+            // (ya fue poblado por JwtAuthenticationFilter)
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+            if (authentication == null || !authentication.isAuthenticated()) {
+                System.err.println("❌ Usuario no autenticado");
+                Map<String, String> response = new HashMap<>();
+                response.put("message", "No autenticado");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
+
+            String email = authentication.getName();
+            System.out.println("🗑️ Solicitud de eliminación de cuenta: " + email);
+
+            userService.deleteUserByEmail(email);
+
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Cuenta eliminada exitosamente");
+
+            return ResponseEntity.ok(response);
+
+        } catch (RuntimeException e) {
+            System.err.println("❌ Error eliminando cuenta: " + e.getMessage());
+
+            Map<String, String> response = new HashMap<>();
+            response.put("message", e.getMessage());
+
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+
+        } catch (Exception e) {
+            System.err.println("❌ Error interno: " + e.getMessage());
+            e.printStackTrace();
+
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Error interno del servidor");
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    /**
+     * Método alternativo usando JwtService directamente
+     * (por si prefieres esta forma)
+     */
+    @DeleteMapping("/delete-account-alt")
+    public ResponseEntity<Map<String, String>> deleteAccountAlt(
             @RequestHeader("Authorization") String authHeader
     ) {
         try {
-            String email = extractEmailFromAuth(authHeader);
+            // Validar formato del header
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                Map<String, String> response = new HashMap<>();
+                response.put("message", "Token JWT inválido");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
+
+            // Extraer el token
+            String jwt = authHeader.substring(7);
+
+            // Extraer el email del token usando JwtService
+            String email = jwtService.extractEmail(jwt);
 
             System.out.println("🗑️ Solicitud de eliminación de cuenta: " + email);
 
@@ -180,13 +234,9 @@ public class AuthController {
             e.printStackTrace();
 
             Map<String, String> response = new HashMap<>();
-            response.put("message", "Error al eliminar la cuenta: " + e.getMessage());
+            response.put("message", "Error al eliminar la cuenta");
 
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
-    }
-
-    private String extractEmailFromAuth(String authHeader) {
-        return authHeader.replace("Bearer ", "");
     }
 }
