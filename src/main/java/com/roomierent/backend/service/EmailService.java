@@ -39,7 +39,7 @@ public class EmailService {
         // CUERPO DEL EMAIL EN ESPAÑOL
         message.setText(
                 "Hola,\n\n" +
-                        "Usted ha solicitado restablecer la contraseña de su cuenta en RentSpace.\n\n" +
+                        "Usted ha solicitado restablecer la contraseña de su cuenta en RoomieRent.\n\n" +
                         "Haga clic en el siguiente enlace para restablecer su contraseña:\n" +
                         resetLink + "\n\n" +
                         "Este enlace expirará en 1 hora.\n\n" +
