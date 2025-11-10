@@ -52,4 +52,14 @@ public class PropertyController {
         String email = auth.getName(); // ✅ EMAIL real
         return ResponseEntity.ok(propertyService.getPropertiesByOwner(email));
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteProperty(
+            @PathVariable Long id,
+            Authentication authentication
+    ) {
+        String email = authentication.getName();
+        propertyService.deleteProperty(id, email);
+        return ResponseEntity.noContent().build();
+    }
 }

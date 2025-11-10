@@ -112,6 +112,17 @@ public class PropertyService {
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
     }
+    public void deleteProperty(Long id, String email) {
+        Property property = propertyRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Property not found"));
+
+        if (!property.getOwner().getEmail().equals(email)) {
+            throw new RuntimeException("You are not allowed to delete this property");
+        }
+
+        propertyRepository.delete(property);
+    }
+
     /**
      * Obtiene el número de propiedades de un propietario
      */
