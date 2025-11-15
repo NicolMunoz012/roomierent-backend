@@ -5,79 +5,55 @@ import com.roomierent.backend.service.FavoriteService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
+
 
 import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/favorites")
-@CrossOrigin(
-        origins = {
-                "http://localhost:3000",
-                "https://roomierent-frontend.vercel.app"
-        },
-        allowedHeaders = "*",
-        methods = {
-                RequestMethod.GET,
-                RequestMethod.POST,
-                RequestMethod.PUT,
-                RequestMethod.DELETE,
-                RequestMethod.OPTIONS
-        },
-        allowCredentials = "true"
-)
 @RequiredArgsConstructor
 public class FavoriteController {
 
     private final FavoriteService favoriteService;
 
-    // Nota: Igual que en PropertyController, de momento el email viene en Authorization: Bearer <email>
-    private String extractEmailFromAuth(String authorization) {
-        if (authorization == null || authorization.isBlank()) {
-            throw new RuntimeException("Authorization header inválido");
-        }
-        if (authorization.startsWith("Bearer ")) {
-            return authorization.substring("Bearer ".length()).trim();
-        }
-        // Soportar email directo sin prefijo Bearer (como en el frontend actual)
-        return authorization.trim();
-    }
-
     @GetMapping("/ids")
-    public ResponseEntity<List<Long>> getFavoriteIds(@RequestHeader("Authorization") String authorization) {
-        String email = extractEmailFromAuth(authorization);
-        List<Long> ids = favoriteService.getFavoriteIds(email);
-        return ResponseEntity.ok(ids);
+    public ResponseEntity<List<Long>> getFavoriteIds(Authentication authentication) {
+        String email = authentication.getName();
+        return ResponseEntity.ok(favoriteService.getFavoriteIds(email));
     }
 
     @GetMapping
-    public ResponseEntity<List<PropertyResponse>> getFavorites(@RequestHeader("Authorization") String authorization) {
-        String email = extractEmailFromAuth(authorization);
-        List<PropertyResponse> favorites = favoriteService.getFavorites(email);
-        return ResponseEntity.ok(favorites);
+    public ResponseEntity<List<PropertyResponse>> getFavorites(Authentication authentication) {
+        String email = authentication.getName();
+        return ResponseEntity.ok(favoriteService.getFavorites(email));
     }
 
     @GetMapping("/status/{propertyId}")
-    public ResponseEntity<Map<String, Boolean>> isFavorite(@RequestHeader("Authorization") String authorization,
-                                                           @PathVariable Long propertyId) {
-        String email = extractEmailFromAuth(authorization);
-        Map<String, Boolean> result = favoriteService.isFavorite(email, propertyId);
-        return ResponseEntity.ok(result);
+    public ResponseEntity<Map<String, Boolean>> isFavorite(
+            Authentication authentication,
+            @PathVariable Long propertyId
+    ) {
+        String email = authentication.getName();
+        return ResponseEntity.ok(favoriteService.isFavorite(email, propertyId));
     }
 
     @PostMapping("/{propertyId}")
-    public ResponseEntity<Map<String, Integer>> addFavorite(@RequestHeader("Authorization") String authorization,
-                                                            @PathVariable Long propertyId) {
-        String email = extractEmailFromAuth(authorization);
-        Map<String, Integer> updated = favoriteService.addFavorite(email, propertyId);
-        return ResponseEntity.ok(updated);
+    public ResponseEntity<Map<String, Integer>> addFavorite(
+            Authentication authentication,
+            @PathVariable Long propertyId
+    ) {
+        String email = authentication.getName();
+        return ResponseEntity.ok(favoriteService.addFavorite(email, propertyId));
     }
 
     @DeleteMapping("/{propertyId}")
-    public ResponseEntity<Map<String, Integer>> removeFavorite(@RequestHeader("Authorization") String authorization,
-                                                               @PathVariable Long propertyId) {
-        String email = extractEmailFromAuth(authorization);
-        Map<String, Integer> updated = favoriteService.removeFavorite(email, propertyId);
-        return ResponseEntity.ok(updated);
+    public ResponseEntity<Map<String, Integer>> removeFavorite(
+            Authentication authentication,
+            @PathVariable Long propertyId
+    ) {
+        String email = authentication.getName();
+        return ResponseEntity.ok(favoriteService.removeFavorite(email, propertyId));
     }
 }
