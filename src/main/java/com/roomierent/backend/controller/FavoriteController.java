@@ -11,7 +11,21 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/favorites")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(
+        origins = {
+                "http://localhost:3000",
+                "https://roomierent-frontend.vercel.app"
+        },
+        allowedHeaders = "*",
+        methods = {
+                RequestMethod.GET,
+                RequestMethod.POST,
+                RequestMethod.PUT,
+                RequestMethod.DELETE,
+                RequestMethod.OPTIONS
+        },
+        allowCredentials = "true"
+)
 @RequiredArgsConstructor
 public class FavoriteController {
 

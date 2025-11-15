@@ -17,7 +17,7 @@ import java.util.Map;
  * Manejo global de excepciones con estructura uniforme
  */
 @RestControllerAdvice
-public class GlobalExceptionHandler {
+public class GlobalExceptionHandler {   
 
     /**
      * Maneja errores de validación de DTOs (@Valid)
