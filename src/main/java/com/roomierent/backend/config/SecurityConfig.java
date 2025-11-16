@@ -29,8 +29,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    // ← NUEVO: Inyectar variable de entorno
-    @Value("${cors.allowed-origins:http://localhost:3000,https://roomierent-frontend.vercel.app}")
+    // 🔥 AQUI SE CARGA DESDE RAILWAY - NO MODIFICARLO
+    @Value("${cors.allowed-origins:http://localhost:3000}")
     private String allowedOrigins;
 
     private final JwtAuthenticationFilter jwtAuthFilter;
@@ -42,17 +42,22 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                        // Rutas públicas
-                        .requestMatchers("/api/auth/**").permitAll() // Login y register
 
-                        // Listado y detalle de propiedades (público)
+                        // 🔓 Rutas públicas
+                        .requestMatchers("/api/auth/**").permitAll()
+
+                        // 🔓 Forgot-password debe ser PÚBLICO
+                        .requestMatchers("/api/forgot-password/**").permitAll()
+
+                        // 🔓 Propiedades GET públicas
                         .requestMatchers(HttpMethod.GET, "/api/properties").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/properties/**").permitAll()
 
-                        // Health checks
+                        // 🔓 Health checks
                         .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/error").permitAll()
 
+                        // 🔒 Todo lo demás requiere autenticación
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->
@@ -86,14 +91,41 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // ← ACTUALIZADO: Soporta múltiples orígenes separados por coma
-        configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
+        // 🔥 SEPARA LOS ORIGINS DEL ENV DE RAILWAY
+        List<String> origins = Arrays.asList(allowedOrigins.split(","));
+        configuration.setAllowedOrigins(origins);
+
+        // 🔥 Métodos permitidos (importantísimo para OPTIONS PRE-FLIGHT)
+        configuration.setAllowedMethods(Arrays.asList(
+                "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
+        ));
+
+        // 🔥 Headers permitidos (para Authorization y JSON)
+        configuration.setAllowedHeaders(Arrays.asList(
+                "Authorization",
+                "Content-Type",
+                "Accept",
+                "Origin",
+                "Access-Control-Request-Method",
+                "Access-Control-Request-Headers"
+        ));
+
+        // 🔥 Headers expuestos
+        configuration.setExposedHeaders(Arrays.asList(
+                "Access-Control-Allow-Origin",
+                "Access-Control-Allow-Credentials"
+        ));
+
+        // 🔥 IMPORTANTE si usas cookies/JWT en header
         configuration.setAllowCredentials(true);
 
+        // 🔥 Cache del preflight
+        configuration.setMaxAge(3600L);
+
+        // 🔥 Aplicar a TODAS las rutas
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
+
         return source;
     }
 }
