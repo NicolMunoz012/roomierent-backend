@@ -29,7 +29,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    // 🔥 AQUI SE CARGA DESDE RAILWAY - NO MODIFICARLO
     @Value("${cors.allowed-origins:http://localhost:3000}")
     private String allowedOrigins;
 
