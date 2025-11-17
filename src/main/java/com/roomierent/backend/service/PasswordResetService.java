@@ -5,6 +5,7 @@ import com.roomierent.backend.dto.ResetPasswordRequest;
 import com.roomierent.backend.model.entity.PasswordResetToken;
 import com.roomierent.backend.model.entity.User;
 import com.roomierent.backend.repository.PasswordResetTokenRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -14,58 +15,57 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
+@Slf4j
 public class PasswordResetService {
 
     private final UserService userService;
     private final PasswordResetTokenRepository tokenRepository;
     private final PasswordEncoder passwordEncoder;
-
-    // ← CLAVE: required = false (no falla si no existe)
-    @Autowired(required = false)
-    private EmailService emailService;
+    private final EmailService emailService;
 
     public PasswordResetService(
             UserService userService,
             PasswordResetTokenRepository tokenRepository,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder,
+            EmailService emailService
     ) {
         this.userService = userService;
         this.tokenRepository = tokenRepository;
         this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
     }
 
     @Transactional
     public void initiatePasswordReset(ForgotPasswordRequest request) {
         User user = userService.findByEmail(request.getEmail());
 
+        // Eliminar tokens previos del usuario
         try {
             tokenRepository.deleteByUserId(user.getId());
         } catch (Exception e) {
-            // Ignorar si no hay tokens previos
+            log.warn("No hay tokens previos para eliminar");
         }
 
+        // Generar nuevo token
         String token = UUID.randomUUID().toString();
 
         PasswordResetToken resetToken = PasswordResetToken.builder()
                 .token(token)
                 .user(user)
-                .expiryDate(LocalDateTime.now().plusHours(1))
+                .expiryDate(LocalDateTime.now().plusMinutes(15))
                 .used(false)
                 .build();
 
         tokenRepository.save(resetToken);
 
-        // Enviar email SOLO si el servicio está disponible
-        if (emailService != null) {
-            try {
-                emailService.sendPasswordResetEmail(user.getEmail(), token);
-                System.out.println("📧 Email de recuperación enviado a: " + user.getEmail());
-            } catch (Exception e) {
-                System.err.println("⚠️ Error enviando email, pero token creado: " + token);
-            }
-        } else {
-            System.out.println("⚠️ EmailService no configurado. Token generado: " + token);
-            System.out.println("   Usuario puede usar este token manualmente.");
+        // Enviar email
+        try {
+            emailService.sendPasswordResetEmail(user.getEmail(), token);
+            log.info("✅ Email de recuperación enviado a: {}", user.getEmail());
+        } catch (Exception e) {
+            log.error("❌ Error enviando email a {}: {}", user.getEmail(), e.getMessage());
+            // No lanzar excepción - el token ya fue creado
+            log.warn("⚠️ Token creado pero email no enviado: {}", token);
         }
     }
 
@@ -89,6 +89,6 @@ public class PasswordResetService {
         resetToken.setUsed(true);
         tokenRepository.save(resetToken);
 
-        System.out.println("✅ Contraseña actualizada para: " + user.getEmail());
+        log.info("✅ Contraseña actualizada para: {}", user.getEmail());
     }
 }
