@@ -41,20 +41,20 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-
-                        // 🔓 Rutas públicas
+                        // ✅ Rutas públicas
                         .requestMatchers("/api/auth/**").permitAll()
 
-                        // 🔓 Forgot-password debe ser PÚBLICO
-                        .requestMatchers("/api/forgot-password/**").permitAll()
-
-                        // 🔓 Propiedades GET públicas
+                        // ✅ Propiedades públicas (GET)
                         .requestMatchers(HttpMethod.GET, "/api/properties").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/properties/**").permitAll()
 
-                        // 🔓 Health checks
+                        // ✅ Health checks
                         .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/error").permitAll()
+
+                        // 🔒 Rutas protegidas (requieren autenticación)
+                        .requestMatchers("/api/recommendations/**").authenticated()
+                        .requestMatchers("/api/favorites/**").authenticated()
 
                         // 🔒 Todo lo demás requiere autenticación
                         .anyRequest().authenticated()
@@ -90,16 +90,18 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // 🔥 SEPARA LOS ORIGINS DEL ENV DE RAILWAY
         List<String> origins = Arrays.asList(allowedOrigins.split(","));
         configuration.setAllowedOrigins(origins);
 
-        // 🔥 Métodos permitidos (importantísimo para OPTIONS PRE-FLIGHT)
         configuration.setAllowedMethods(Arrays.asList(
-                "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
+                "GET",
+                "POST",
+                "PUT",
+                "DELETE",
+                "PATCH",
+                "OPTIONS"
         ));
 
-        // 🔥 Headers permitidos (para Authorization y JSON)
         configuration.setAllowedHeaders(Arrays.asList(
                 "Authorization",
                 "Content-Type",
@@ -109,19 +111,14 @@ public class SecurityConfig {
                 "Access-Control-Request-Headers"
         ));
 
-        // 🔥 Headers expuestos
         configuration.setExposedHeaders(Arrays.asList(
                 "Access-Control-Allow-Origin",
                 "Access-Control-Allow-Credentials"
         ));
 
-        // 🔥 IMPORTANTE si usas cookies/JWT en header
         configuration.setAllowCredentials(true);
-
-        // 🔥 Cache del preflight
         configuration.setMaxAge(3600L);
 
-        // 🔥 Aplicar a TODAS las rutas
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
 
