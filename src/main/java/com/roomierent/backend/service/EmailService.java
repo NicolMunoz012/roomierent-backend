@@ -31,7 +31,7 @@ public class EmailService {
 
             // Crear payload
             Map<String, Object> payload = new HashMap<>();
-            payload.put("from", "RoomieRent <onboarding@resend.dev>");
+            payload.put("from", "RoomieRent <noreply@roomierent.online>");
             payload.put("to", List.of(toEmail));
             payload.put("subject", "Recuperación de Contraseña - RoomieRent");
             payload.put("html", htmlContent);
