@@ -107,20 +107,33 @@ public class EmailService {
 
     /**
      * Construye el HTML del email de recuperación
+     * ✏️ CAMBIO AQUÍ: Ahora envía un LINK en lugar de un código
      */
     private String buildPasswordResetEmailBody(String token) {
+        String resetLink = "https://roomierent-frontend.vercel.app/reset-password?token=" + token;
+
         return String.format("""
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                 <h2 style="color: #2563eb;">Recuperación de Contraseña</h2>
                 <p>Hola,</p>
                 <p>Recibimos una solicitud para restablecer tu contraseña en <strong>RoomieRent</strong>.</p>
                 
-                <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                    <p style="margin: 0; font-size: 14px; color: #6b7280;">Tu código de recuperación es:</p>
-                    <p style="font-size: 32px; font-weight: bold; color: #2563eb; margin: 10px 0; letter-spacing: 2px;">%s</p>
+                <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
+                    <p style="margin: 0 0 15px 0; font-size: 14px; color: #6b7280;">
+                        Haz clic en el siguiente botón para crear tu nueva contraseña:
+                    </p>
+                    <a href="%s" 
+                       style="background-color: #2563eb; color: white; padding: 12px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
+                        Restablecer Contraseña
+                    </a>
                 </div>
                 
-                <p style="color: #ef4444; font-size: 14px;">⚠️ Este código expira en 15 minutos.</p>
+                <p style="color: #ef4444; font-size: 14px;">⚠️ Este enlace expira en 15 minutos.</p>
+                
+                <p style="font-size: 13px; color: #6b7280;">
+                    Si el botón no funciona, copia y pega este enlace en tu navegador:<br>
+                    <a href="%s" style="color: #2563eb; word-break: break-all;">%s</a>
+                </p>
                 
                 <p>Si no solicitaste este cambio, puedes ignorar este mensaje.</p>
                 
@@ -130,7 +143,7 @@ public class EmailService {
                     <strong>Equipo RoomieRent</strong>
                 </p>
             </div>
-            """, token);
+            """, resetLink, resetLink, resetLink);
     }
 
     /**
