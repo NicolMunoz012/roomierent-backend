@@ -65,7 +65,10 @@ public class PropertyController {
     @GetMapping("/my-properties")
     public ResponseEntity<List<PropertyResponse>> getMyProperties() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String email = auth.getName(); // ✅ EMAIL real
+        if (auth == null || !auth.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        String email = auth.getName();
         return ResponseEntity.ok(propertyService.getPropertiesByOwner(email));
     }
 

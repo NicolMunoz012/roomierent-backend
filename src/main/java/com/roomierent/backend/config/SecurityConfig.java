@@ -41,22 +41,18 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                        // ✅ Rutas públicas
                         .requestMatchers("/api/auth/**").permitAll()
 
-                        // ✅ Propiedades públicas (GET)
                         .requestMatchers(HttpMethod.GET, "/api/properties").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/properties/my-properties").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/properties/**").permitAll()
 
-                        // ✅ Health checks
                         .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/error").permitAll()
 
-                        // 🔒 Rutas protegidas (requieren autenticación)
                         .requestMatchers("/api/recommendations/**").authenticated()
                         .requestMatchers("/api/favorites/**").authenticated()
 
-                        // 🔒 Todo lo demás requiere autenticación
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->
