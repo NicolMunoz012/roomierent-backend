@@ -9,6 +9,8 @@ import com.roomierent.backend.service.UserPreferencesService;
 import com.roomierent.backend.service.recommendation.RecommendationManager;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -39,9 +41,11 @@ public class RecommendationController {
     private final UserPreferencesService preferencesService;
     private final PropertyService propertyService;
 
-    public RecommendationController(RecommendationManager recommendationManager,
-                                    UserPreferencesService preferencesService,
-                                    PropertyService propertyService) {
+    public RecommendationController(
+            RecommendationManager recommendationManager,
+            UserPreferencesService preferencesService,
+            PropertyService propertyService
+    ) {
         this.recommendationManager = recommendationManager;
         this.preferencesService = preferencesService;
         this.propertyService = propertyService;
@@ -53,12 +57,10 @@ public class RecommendationController {
      */
     @GetMapping
     public ResponseEntity<List<PropertyResponse>> getRecommendations(
-            @RequestHeader("Authorization") String authHeader,
             @RequestParam(defaultValue = "10") int limit
     ) {
         try {
-            String email = extractEmailFromAuth(authHeader);
-
+            String email = getAuthenticatedUserEmail();
             System.out.println("📥 Petición de recomendaciones para: " + email);
 
             List<Property> recommendations = recommendationManager.getRecommendationsForUser(email, limit);
@@ -108,12 +110,10 @@ public class RecommendationController {
      */
     @PostMapping("/preferences")
     public ResponseEntity<UserPreferencesResponse> savePreferences(
-            @RequestHeader("Authorization") String authHeader,
             @Valid @RequestBody UserPreferencesRequest request
     ) {
         try {
-            String email = extractEmailFromAuth(authHeader);
-
+            String email = getAuthenticatedUserEmail();
             System.out.println("📥 Guardando preferencias para: " + email);
 
             UserPreferencesResponse response = preferencesService.saveOrUpdatePreferences(email, request);
@@ -124,6 +124,7 @@ public class RecommendationController {
 
         } catch (Exception e) {
             System.err.println("❌ Error guardando preferencias: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.internalServerError().build();
         }
     }
@@ -133,22 +134,24 @@ public class RecommendationController {
      * Obtiene las preferencias del usuario
      */
     @GetMapping("/preferences")
-    public ResponseEntity<UserPreferencesResponse> getPreferences(
-            @RequestHeader("Authorization") String authHeader
-    ) {
+    public ResponseEntity<UserPreferencesResponse> getPreferences() {
         try {
-            String email = extractEmailFromAuth(authHeader);
+            String email = getAuthenticatedUserEmail();
+            System.out.println("📥 Obteniendo preferencias para: " + email);
 
             UserPreferencesResponse response = preferencesService.getPreferences(email);
 
             if (response == null) {
+                System.out.println("ℹ️ Usuario sin preferencias guardadas");
                 return ResponseEntity.noContent().build();
             }
 
+            System.out.println("✅ Preferencias obtenidas");
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
             System.err.println("❌ Error obteniendo preferencias: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.internalServerError().build();
         }
     }
@@ -191,16 +194,22 @@ public class RecommendationController {
 
     /**
      * Convierte Property a PropertyResponse
-     * (Reutilizando la lógica de PropertyService)
      */
     private PropertyResponse convertToResponse(Property property) {
         return propertyService.convertToResponse(property);
     }
 
     /**
-     * Extrae el email del header Authorization
+     * Obtiene el email del usuario autenticado desde el SecurityContext
+     * Este método es seguro porque el JwtAuthenticationFilter ya validó el token
      */
-    private String extractEmailFromAuth(String authHeader) {
-        return authHeader.replace("Bearer ", "");
+    private String getAuthenticatedUserEmail() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new RuntimeException("Usuario no autenticado");
+        }
+
+        return authentication.getName(); // Retorna el email (username)
     }
 }
