@@ -1,159 +1,148 @@
 package com.roomierent.backend.util.datastructures;
 
 import com.roomierent.backend.model.entity.Property;
+import com.roomierent.backend.util.SimilarityCalculator;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
 
 /**
- * Graph (Grafo no dirigido) para representar similitud entre propiedades
- *
- * Estructura de Datos: GRAFO
- * Representación: Lista de Adyacencia
- *
- * Uso: Encontrar propiedades similares para recomendaciones
- * Algoritmo: BFS para encontrar propiedades relacionadas
+ * Grafo de similitud entre propiedades
+ * Implementa K-Nearest Neighbors (KNN) para recomendaciones
  */
 @Component
 public class PropertyGraph {
 
-    // Mapa de propertyId -> Lista de propiedades similares con peso de similitud
-    private Map<Long, List<Edge>> adjacencyList;
+    // Nodos del grafo: propertyId -> Set de vecinos con similitud
+    private final Map<Long, Map<Long, Double>> adjacencyList;
 
     public PropertyGraph() {
         this.adjacencyList = new HashMap<>();
     }
 
     /**
-     * Clase para representar una arista con peso
-     */
-    public static class Edge {
-        private Long targetPropertyId;
-        private double similarityScore; // 0.0 a 1.0
-
-        public Edge(Long targetPropertyId, double similarityScore) {
-            this.targetPropertyId = targetPropertyId;
-            this.similarityScore = similarityScore;
-        }
-
-        public Long getTargetPropertyId() {
-            return targetPropertyId;
-        }
-
-        public double getSimilarityScore() {
-            return similarityScore;
-        }
-    }
-
-    /**
      * Agrega una propiedad al grafo
      */
     public void addProperty(Long propertyId) {
-        adjacencyList.putIfAbsent(propertyId, new ArrayList<>());
+        adjacencyList.putIfAbsent(propertyId, new HashMap<>());
     }
 
     /**
-     * Crea una conexión bidireccional entre dos propiedades
-     * @param similarity Score de similitud (0.0 a 1.0)
+     * Agrega una arista de similitud entre dos propiedades
      */
     public void addSimilarityEdge(Long property1Id, Long property2Id, double similarity) {
-        addProperty(property1Id);
-        addProperty(property2Id);
-
-        adjacencyList.get(property1Id).add(new Edge(property2Id, similarity));
-        adjacencyList.get(property2Id).add(new Edge(property1Id, similarity));
+        // Agregar arista bidireccional
+        adjacencyList.get(property1Id).put(property2Id, similarity);
+        adjacencyList.get(property2Id).put(property1Id, similarity);
     }
 
     /**
-     * Encuentra propiedades similares usando BFS
-     * @param propertyId ID de la propiedad origen
-     * @param minSimilarity Similitud mínima requerida
-     * @param maxResults Número máximo de resultados
-     * @return Lista de IDs de propiedades similares ordenadas por similitud
+     * Encuentra propiedades similares usando BFS modificado
+     * (K-Nearest Neighbors en el grafo)
      */
-    public List<Long> findSimilarProperties(Long propertyId, double minSimilarity, int maxResults) {
+    public List<Long> findSimilarProperties(
+            Long propertyId,
+            double minSimilarity,
+            int limit
+    ) {
         if (!adjacencyList.containsKey(propertyId)) {
             return new ArrayList<>();
         }
 
-        // Priority Queue para mantener las mejores similitudes
-        PriorityQueue<Edge> pq = new PriorityQueue<>(
-                (a, b) -> Double.compare(b.getSimilarityScore(), a.getSimilarityScore())
-        );
+        // Obtener vecinos directos ordenados por similitud
+        Map<Long, Double> neighbors = adjacencyList.get(propertyId);
 
-        Set<Long> visited = new HashSet<>();
-        visited.add(propertyId);
+        List<Map.Entry<Long, Double>> sortedNeighbors = new ArrayList<>(neighbors.entrySet());
+        sortedNeighbors.sort((a, b) -> Double.compare(b.getValue(), a.getValue()));
 
-        // BFS
-        Queue<Long> queue = new LinkedList<>();
-        queue.offer(propertyId);
-
-        while (!queue.isEmpty()) {
-            Long current = queue.poll();
-
-            for (Edge edge : adjacencyList.get(current)) {
-                if (!visited.contains(edge.getTargetPropertyId()) &&
-                        edge.getSimilarityScore() >= minSimilarity) {
-
-                    visited.add(edge.getTargetPropertyId());
-                    pq.offer(edge);
-                    queue.offer(edge.getTargetPropertyId());
-                }
+        // Filtrar por similitud mínima y limitar resultados
+        List<Long> similarProperties = new ArrayList<>();
+        for (Map.Entry<Long, Double> entry : sortedNeighbors) {
+            if (entry.getValue() >= minSimilarity && similarProperties.size() < limit) {
+                similarProperties.add(entry.getKey());
             }
         }
 
-        // Extraer los mejores resultados
-        List<Long> results = new ArrayList<>();
-        while (!pq.isEmpty() && results.size() < maxResults) {
-            results.add(pq.poll().getTargetPropertyId());
-        }
-
-        return results;
+        return similarProperties;
     }
 
     /**
-     * Calcula la similitud entre dos propiedades basándose en sus características
+     * Calcula la similitud entre dos propiedades
      */
     public static double calculateSimilarity(Property p1, Property p2) {
-        double score = 0.0;
+        // Pesos para cada componente de similitud
+        double priceWeight = 0.25;
+        double locationWeight = 0.30;
+        double amenitiesWeight = 0.20;
+        double cosineWeight = 0.25;
 
-        // Mismo tipo de propiedad (+30%)
-        if (p1.getType() == p2.getType()) {
-            score += 0.3;
-        }
+        // Componente 1: Similitud de precio
+        double priceScore = calculatePriceSimilarity(p1, p2);
 
-        // Ciudad similar (+20%)
-        if (p1.getCity().equalsIgnoreCase(p2.getCity())) {
-            score += 0.2;
-        }
+        // Componente 2: Similitud de ubicación
+        double locationScore = SimilarityCalculator.calculateLocationSimilarity(p1, p2);
 
-        // Precio similar (±20%) (+25%)
-        double priceDiff = Math.abs(p1.getPrice().doubleValue() - p2.getPrice().doubleValue());
-        double avgPrice = (p1.getPrice().doubleValue() + p2.getPrice().doubleValue()) / 2;
-        if (avgPrice > 0 && (priceDiff / avgPrice) <= 0.2) {
-            score += 0.25;
-        }
+        // Componente 3: Similitud de amenities (Jaccard)
+        double amenitiesScore = SimilarityCalculator.calculateAmenitiesSimilarity(p1, p2);
 
-        // Habitaciones similares (+15%)
-        if (Math.abs(p1.getBedrooms() - p2.getBedrooms()) <= 1) {
-            score += 0.15;
-        }
+        // Componente 4: Similitud de coseno (características generales)
+        double cosineScore = SimilarityCalculator.calculateCosineSimilarity(p1, p2);
 
-        // Área similar (±20%) (+10%)
-        double areaDiff = Math.abs(p1.getArea() - p2.getArea());
-        double avgArea = (p1.getArea() + p2.getArea()) / 2;
-        if (avgArea > 0 && (areaDiff / avgArea) <= 0.2) {
-            score += 0.1;
-        }
-
-        return score;
+        // Similitud total ponderada
+        return (priceScore * priceWeight) +
+                (locationScore * locationWeight) +
+                (amenitiesScore * amenitiesWeight) +
+                (cosineScore * cosineWeight);
     }
 
+    /**
+     * Calcula similitud de precio (Gaussian similarity)
+     */
+    private static double calculatePriceSimilarity(Property p1, Property p2) {
+        if (p1.getPrice() == null || p2.getPrice() == null) {
+            return 0.5;
+        }
+
+        double price1 = p1.getPrice().doubleValue();
+        double price2 = p2.getPrice().doubleValue();
+
+        // Diferencia relativa
+        double avgPrice = (price1 + price2) / 2;
+        double relativeDiff = Math.abs(price1 - price2) / avgPrice;
+
+        // Función Gaussiana: e^(-(diff^2) / 2σ^2)
+        // σ = 0.3 (30% de diferencia da 0.6 de similitud)
+        double sigma = 0.3;
+        return Math.exp(-(relativeDiff * relativeDiff) / (2 * sigma * sigma));
+    }
+
+    /**
+     * Limpia el grafo
+     */
     public void clear() {
         adjacencyList.clear();
     }
 
+    /**
+     * Retorna el número de nodos en el grafo
+     */
     public int size() {
         return adjacencyList.size();
+    }
+
+    /**
+     * Obtiene los vecinos de una propiedad ordenados por similitud
+     */
+    public List<Map.Entry<Long, Double>> getNeighborsSorted(Long propertyId) {
+        if (!adjacencyList.containsKey(propertyId)) {
+            return new ArrayList<>();
+        }
+
+        List<Map.Entry<Long, Double>> neighbors =
+                new ArrayList<>(adjacencyList.get(propertyId).entrySet());
+
+        neighbors.sort((a, b) -> Double.compare(b.getValue(), a.getValue()));
+
+        return neighbors;
     }
 }

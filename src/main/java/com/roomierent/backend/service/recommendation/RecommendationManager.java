@@ -12,7 +12,10 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * Manager principal del sistema de recomendaciones con IA
+ * Coordina diferentes estrategias de Machine Learning
+ */
 @Service
 public class RecommendationManager {
 
@@ -41,6 +44,9 @@ public class RecommendationManager {
 
         // Estrategia por defecto
         this.currentStrategy = scoreBasedStrategy;
+
+        System.out.println("✅ RecommendationManager inicializado");
+        System.out.println("   🤖 Estrategia activa: " + currentStrategy.getStrategyName());
     }
 
     /**
@@ -51,7 +57,10 @@ public class RecommendationManager {
      * @return Lista de propiedades recomendadas
      */
     public List<Property> getRecommendationsForUser(String userEmail, int limit) {
-        System.out.println("🎯 Generando recomendaciones para: " + userEmail);
+        System.out.println("\n🎯 ============================================");
+        System.out.println("   GENERANDO RECOMENDACIONES CON IA");
+        System.out.println("   ============================================");
+        System.out.println("   👤 Usuario: " + userEmail);
 
         // 1. Buscar usuario
         User user = userRepository.findByEmail(userEmail)
@@ -61,13 +70,21 @@ public class RecommendationManager {
         UserPreferences preferences = preferencesRepository.findByUser(user)
                 .orElse(createDefaultPreferences(user));
 
+        System.out.println("   ⚙️  Preferencias cargadas:");
+        System.out.println("      • Ciudad: " + preferences.getPreferredCity());
+        System.out.println("      • Precio: " + preferences.getMinPrice() + " - " + preferences.getMaxPrice());
+        System.out.println("      • Habitaciones mín: " + preferences.getMinBedrooms());
+        System.out.println("      • Pesos: [Precio:" + preferences.getPriceWeight() +
+                ", Ubicación:" + preferences.getLocationWeight() +
+                ", Amenities:" + preferences.getAmenitiesWeight() + "]");
+
         // 3. Obtener propiedades disponibles
         List<Property> availableProperties = propertyRepository.findAvailableProperties();
 
         System.out.println("   📊 Propiedades disponibles: " + availableProperties.size());
-        System.out.println("   🎲 Estrategia: " + currentStrategy.getStrategyName());
+        System.out.println("   🤖 Estrategia: " + currentStrategy.getStrategyName());
 
-        // 4. Aplicar estrategia de recomendación
+        // 4. Aplicar estrategia de recomendación (IA)
         List<Property> recommendations = currentStrategy.recommend(
                 availableProperties,
                 preferences,
@@ -75,45 +92,63 @@ public class RecommendationManager {
         );
 
         System.out.println("   ✅ Recomendaciones generadas: " + recommendations.size());
+        System.out.println("   ============================================\n");
 
         return recommendations;
     }
 
+    /**
+     * Obtiene propiedades similares usando el grafo de similitud (KNN)
+     */
     public List<Property> getSimilarProperties(Long propertyId, int limit) {
-        System.out.println("🔍 Buscando propiedades similares a ID: " + propertyId);
+        System.out.println("\n🔍 ============================================");
+        System.out.println("   BUSCANDO PROPIEDADES SIMILARES (KNN)");
+        System.out.println("   ============================================");
+        System.out.println("   🏠 Propiedad base ID: " + propertyId);
 
         // Construir grafo si está vacío
         if (propertyGraph.size() == 0) {
+            System.out.println("   ⚠️  Grafo vacío, construyendo...");
             buildPropertyGraph();
         }
 
-        // Buscar propiedades similares usando BFS en el grafo
+        // Buscar propiedades similares usando KNN en el grafo
         List<Long> similarPropertyIds = propertyGraph.findSimilarProperties(
                 propertyId,
                 0.3, // Similitud mínima 30%
                 limit
         );
 
+        System.out.println("   📊 IDs similares encontrados: " + similarPropertyIds.size());
+
         // Convertir IDs a entidades Property
         List<Property> similarProperties = new ArrayList<>();
         for (Long id : similarPropertyIds) {
-            propertyRepository.findById(id).ifPresent(similarProperties::add);
+            propertyRepository.findById(id).ifPresent(property -> {
+                similarProperties.add(property);
+                System.out.println("      • " + property.getTitle() + " (ID: " + id + ")");
+            });
         }
 
-        System.out.println("   ✅ Propiedades similares encontradas: " + similarProperties.size());
+        System.out.println("   ✅ Propiedades similares: " + similarProperties.size());
+        System.out.println("   ============================================\n");
 
         return similarProperties;
     }
 
     /**
      * Construye el grafo de similitud entre todas las propiedades
-     * Este proceso se ejecuta cuando es necesario
+     * Usa algoritmos de Machine Learning para calcular similitudes
      */
     public void buildPropertyGraph() {
-        System.out.println("🔨 Construyendo grafo de similitud de propiedades...");
+        System.out.println("\n🔨 ============================================");
+        System.out.println("   CONSTRUYENDO GRAFO DE SIMILITUD (ML)");
+        System.out.println("   ============================================");
 
         propertyGraph.clear();
         List<Property> allProperties = propertyRepository.findAll();
+
+        System.out.println("   📊 Total de propiedades: " + allProperties.size());
 
         // Agregar todas las propiedades al grafo
         for (Property property : allProperties) {
@@ -122,12 +157,16 @@ public class RecommendationManager {
 
         // Calcular similitud entre cada par de propiedades
         int edges = 0;
+        int comparisons = 0;
+
         for (int i = 0; i < allProperties.size(); i++) {
             for (int j = i + 1; j < allProperties.size(); j++) {
                 Property p1 = allProperties.get(i);
                 Property p2 = allProperties.get(j);
 
+                // Calcular similitud usando algoritmos de ML
                 double similarity = PropertyGraph.calculateSimilarity(p1, p2);
+                comparisons++;
 
                 // Solo agregar arista si hay similitud significativa (> 20%)
                 if (similarity > 0.2) {
@@ -137,9 +176,13 @@ public class RecommendationManager {
             }
         }
 
-        System.out.println("   ✅ Grafo construido: " +
-                allProperties.size() + " nodos, " +
-                edges + " aristas");
+        System.out.println("   ✅ Grafo construido exitosamente:");
+        System.out.println("      • Nodos (propiedades): " + allProperties.size());
+        System.out.println("      • Comparaciones realizadas: " + comparisons);
+        System.out.println("      • Aristas (similitudes > 20%): " + edges);
+        System.out.println("      • Densidad del grafo: " +
+                String.format("%.2f%%", (edges * 100.0) / comparisons));
+        System.out.println("   ============================================\n");
     }
 
     /**
@@ -173,6 +216,8 @@ public class RecommendationManager {
      * Crea preferencias por defecto para un usuario nuevo
      */
     private UserPreferences createDefaultPreferences(User user) {
+        System.out.println("   ⚠️  Usuario sin preferencias, usando valores por defecto");
+
         return UserPreferences.builder()
                 .user(user)
                 .minBedrooms(1)
