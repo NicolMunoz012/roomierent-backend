@@ -108,4 +108,30 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException ex) {
+        String message = ex.getMessage();
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+
+        if (message != null) {
+            String m = message.toLowerCase();
+            if (m.contains("usuario no encontrado")) {
+                status = HttpStatus.NOT_FOUND;
+            } else if (m.contains("propiedad no encontrada")) {
+                status = HttpStatus.NOT_FOUND;
+            } else if (m.contains("not allowed") || m.contains("no permitido")) {
+                status = HttpStatus.FORBIDDEN;
+            }
+        }
+
+        ErrorResponse error = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(status.value())
+                .error(status.getReasonPhrase())
+                .message(message)
+                .build();
+
+        return ResponseEntity.status(status).body(error);
+    }
 }
