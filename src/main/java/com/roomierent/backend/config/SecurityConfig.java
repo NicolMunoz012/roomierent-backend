@@ -41,21 +41,24 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
 
-                        // rutas públicas claras
+                        // 🔓 Rutas públicas (sin token)
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/error").permitAll()
+                        .requestMatchers("/actuator/**").permitAll()
+
+                        // Propiedades públicas
                         .requestMatchers(HttpMethod.GET, "/api/properties").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/properties/{id}").permitAll()
 
-                        // rutas protegidas
+                        // ❗ Protección real (sin conflictos)
                         .requestMatchers(HttpMethod.GET, "/api/properties/my-properties").authenticated()
 
-                        .requestMatchers("/actuator/**").permitAll()
-                        .requestMatchers("/error").permitAll()
-
-                        .requestMatchers("/api/recommendations/**").authenticated()
+                        // Favoritos, recomendaciones, etc.
                         .requestMatchers("/api/favorites/**").authenticated()
+                        .requestMatchers("/api/recommendations/**").authenticated()
 
+                        // Todo lo demás requiere autenticación
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->
@@ -69,10 +72,10 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService);
-        authProvider.setPasswordEncoder(passwordEncoder());
-        return authProvider;
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+        return provider;
     }
 
     @Bean
@@ -87,24 +90,21 @@ public class SecurityConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
+        CorsConfiguration config = new CorsConfiguration();
 
-        configuration.setAllowedOriginPatterns(Arrays.asList(
+        config.setAllowedOriginPatterns(Arrays.asList(
                 "http://localhost:3000",
                 "https://roomierent-frontend.vercel.app",
                 "https://*.vercel.app",
-                "https://www.roomierent.online/"
-        ));
-        configuration.setAllowedMethods(Arrays.asList(
-                "GET",
-                "POST",
-                "PUT",
-                "DELETE",
-                "PATCH",
-                "OPTIONS"
+                "https://www.roomierent.online",
+                "https://roomierent.online"
         ));
 
-        configuration.setAllowedHeaders(Arrays.asList(
+        config.setAllowedMethods(Arrays.asList(
+                "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
+        ));
+
+        config.setAllowedHeaders(Arrays.asList(
                 "Authorization",
                 "Content-Type",
                 "Accept",
@@ -113,16 +113,16 @@ public class SecurityConfig {
                 "Access-Control-Request-Headers"
         ));
 
-        configuration.setExposedHeaders(Arrays.asList(
+        config.setExposedHeaders(Arrays.asList(
                 "Access-Control-Allow-Origin",
                 "Access-Control-Allow-Credentials"
         ));
 
-        configuration.setAllowCredentials(true);
-        configuration.setMaxAge(3600L);
+        config.setAllowCredentials(true);
+        config.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
+        source.registerCorsConfiguration("/**", config);
 
         return source;
     }
