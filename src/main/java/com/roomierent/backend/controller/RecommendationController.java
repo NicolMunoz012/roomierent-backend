@@ -201,15 +201,25 @@ public class RecommendationController {
 
     /**
      * Obtiene el email del usuario autenticado desde el SecurityContext
-     * Este método es seguro porque el JwtAuthenticationFilter ya validó el token
      */
     private String getAuthenticatedUserEmail() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        if (authentication == null || !authentication.isAuthenticated()) {
+        System.out.println("🔍 DEBUG - Authentication: " + authentication);
+
+        if (authentication == null) {
+            System.err.println("❌ Authentication es null");
+            throw new RuntimeException("Usuario no autenticado - authentication es null");
+        }
+
+        if (!authentication.isAuthenticated()) {
+            System.err.println("❌ Usuario no autenticado");
             throw new RuntimeException("Usuario no autenticado");
         }
 
-        return authentication.getName(); // Retorna el email (username)
+        System.out.println("✅ Usuario autenticado: " + authentication.getName());
+        System.out.println("   Authorities: " + authentication.getAuthorities());
+
+        return authentication.getName();
     }
 }
