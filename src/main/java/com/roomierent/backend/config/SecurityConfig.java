@@ -43,9 +43,12 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
 
+                        // rutas públicas claras
                         .requestMatchers(HttpMethod.GET, "/api/properties").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/properties/{id}").permitAll()
+
+                        // rutas protegidas
                         .requestMatchers(HttpMethod.GET, "/api/properties/my-properties").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/api/properties/**").permitAll()
 
                         .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/error").permitAll()
