@@ -93,7 +93,8 @@ public class SecurityConfig {
         configuration.setAllowedOriginPatterns(Arrays.asList(
                 "http://localhost:3000",
                 "https://roomierent-frontend.vercel.app",
-                "https://*.vercel.app"
+                "https://*.vercel.app",
+                "https://www.roomierent.online/"
         ));
         configuration.setAllowedMethods(Arrays.asList(
                 "GET",

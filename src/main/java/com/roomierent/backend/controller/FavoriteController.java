@@ -16,7 +16,8 @@ import java.util.Map;
         origins = {
                 "http://localhost:3000",
                 "https://roomierent-frontend.vercel.app",
-                "https://*.vercel.app"
+                "https://*.vercel.app",
+                "https://www.roomierent.online/"
         },
         allowedHeaders = "*",
         methods = {

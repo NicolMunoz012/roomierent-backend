@@ -26,7 +26,8 @@ import java.util.Map;
                 "http://localhost:3000",
                 "https://roomierent-frontend.vercel.app",
                 "https://roomierent-frontend-git-main-nicols-projects-baf675f0.vercel.app",
-                "https://*.vercel.app"
+                "https://*.vercel.app",
+                "https://www.roomierent.online/"
         },
         allowedHeaders = "*",
         methods = {
