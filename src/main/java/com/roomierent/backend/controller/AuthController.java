@@ -24,7 +24,9 @@ import java.util.Map;
 @CrossOrigin(
         origins = {
                 "http://localhost:3000",
-                "https://roomierent-frontend.vercel.app"
+                "https://roomierent-frontend.vercel.app",
+                "https://roomierent-frontend-git-main-nicols-projects-baf675f0.vercel.app",
+                "https://*.vercel.app"
         },
         allowedHeaders = "*",
         methods = {

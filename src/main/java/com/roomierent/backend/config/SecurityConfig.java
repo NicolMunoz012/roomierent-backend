@@ -90,9 +90,11 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        List<String> origins = Arrays.asList(allowedOrigins.split(","));
-        configuration.setAllowedOrigins(origins);
-
+        configuration.setAllowedOriginPatterns(Arrays.asList(
+                "http://localhost:3000",
+                "https://roomierent-frontend.vercel.app",
+                "https://*.vercel.app"
+        ));
         configuration.setAllowedMethods(Arrays.asList(
                 "GET",
                 "POST",
