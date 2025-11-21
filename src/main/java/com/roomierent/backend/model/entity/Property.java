@@ -80,7 +80,7 @@ public class Property {
     private User owner;
 
     // Imágenes
-    @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @org.hibernate.annotations.OnDelete(action = org.hibernate.annotations.OnDeleteAction.CASCADE)
     @Builder.Default
     private List<PropertyImage> images = new ArrayList<>();

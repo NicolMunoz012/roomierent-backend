@@ -105,6 +105,7 @@ public class PropertyService {
     /**
      * Obtiene las propiedades de un propietario
      */
+    @Transactional(readOnly = true)
     public List<PropertyResponse> getPropertiesByOwner(String ownerEmail) {
         User owner = userService.findByEmail(ownerEmail);
 
