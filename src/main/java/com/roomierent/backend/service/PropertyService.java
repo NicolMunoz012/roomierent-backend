@@ -136,39 +136,68 @@ public class PropertyService {
      * Convierte Property a PropertyResponse
      */
     public PropertyResponse convertToResponse(Property property) {
-        List<String> amenitiesList = property.getAmenities() != null && !property.getAmenities().isEmpty()
-                ? List.of(property.getAmenities().split(","))
-                : new ArrayList<>();
+        try {
+            // ✅ Amenities seguro
+            List<String> amenitiesList = new ArrayList<>();
+            if (property.getAmenities() != null && !property.getAmenities().isEmpty()) {
+                amenitiesList = List.of(property.getAmenities().split(","));
+            }
 
-        List<String> imageUrls = property.getImages().stream()
-                .sorted((a, b) -> a.getDisplayOrder().compareTo(b.getDisplayOrder()))
-                .map(PropertyImage::getImageUrl)
-                .collect(Collectors.toList());
+            // ✅ Images seguro
+            List<String> imageUrls = new ArrayList<>();
+            if (property.getImages() != null && !property.getImages().isEmpty()) {
+                imageUrls = property.getImages().stream()
+                        .sorted((a, b) -> Integer.compare(
+                                a.getDisplayOrder() != null ? a.getDisplayOrder() : 0,
+                                b.getDisplayOrder() != null ? b.getDisplayOrder() : 0
+                        ))
+                        .map(PropertyImage::getImageUrl)
+                        .filter(url -> url != null && !url.isEmpty())
+                        .collect(Collectors.toList());
+            }
 
-        return PropertyResponse.builder()
-                .id(property.getId())
-                .title(property.getTitle())
-                .description(property.getDescription())
-                .price(property.getPrice())
-                .type(property.getType())
-                .status(property.getStatus())
-                .address(property.getAddress())
-                .city(property.getCity())
-                .neighborhood(property.getNeighborhood())
-                .latitude(property.getLatitude())
-                .longitude(property.getLongitude())
-                .bedrooms(property.getBedrooms())
-                .bathrooms(property.getBathrooms())
-                .area(property.getArea())
-                .amenities(amenitiesList)
-                .imageUrls(imageUrls)
-                .ownerId(property.getOwner().getId())
-                .ownerName(property.getOwner().getName())
-                .ownerEmail(property.getOwner().getEmail())
-                .viewCount(property.getViewCount())
-                .favoriteCount(property.getFavoriteCount())
-                .createdAt(property.getCreatedAt())
-                .updatedAt(property.getUpdatedAt())
-                .build();
+            // ✅ Owner seguro
+            Long ownerId = null;
+            String ownerName = "Desconocido";
+            String ownerEmail = "N/A";
+
+            if (property.getOwner() != null) {
+                ownerId = property.getOwner().getId();
+                ownerName = property.getOwner().getName() != null ? property.getOwner().getName() : "Desconocido";
+                ownerEmail = property.getOwner().getEmail() != null ? property.getOwner().getEmail() : "N/A";
+            }
+
+            return PropertyResponse.builder()
+                    .id(property.getId())
+                    .title(property.getTitle())
+                    .description(property.getDescription())
+                    .price(property.getPrice())
+                    .type(property.getType())
+                    .status(property.getStatus() != null ? property.getStatus() : PropertyStatus.AVAILABLE)
+                    .address(property.getAddress())
+                    .city(property.getCity())
+                    .neighborhood(property.getNeighborhood())
+                    .latitude(property.getLatitude() != null ? property.getLatitude() : 0.0)
+                    .longitude(property.getLongitude() != null ? property.getLongitude() : 0.0)
+                    .bedrooms(property.getBedrooms() != null ? property.getBedrooms() : 0)
+                    .bathrooms(property.getBathrooms() != null ? property.getBathrooms() : 0)
+                    .area(property.getArea() != null ? property.getArea() : 0.0)
+                    .amenities(amenitiesList)
+                    .imageUrls(imageUrls)
+                    .ownerId(ownerId)
+                    .ownerName(ownerName)
+                    .ownerEmail(ownerEmail)
+                    .viewCount(property.getViewCount() != null ? property.getViewCount() : 0)
+                    .favoriteCount(property.getFavoriteCount() != null ? property.getFavoriteCount() : 0)
+                    .createdAt(property.getCreatedAt())
+                    .updatedAt(property.getUpdatedAt())
+                    .build();
+
+        } catch (Exception e) {
+            System.out.println("❌❌❌ Error en convertToResponse para propiedad ID: " + property.getId());
+            System.out.println("❌ Mensaje: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Error al convertir propiedad a respuesta", e);
+        }
     }
 }
