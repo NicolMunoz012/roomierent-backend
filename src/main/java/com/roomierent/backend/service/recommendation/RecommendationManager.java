@@ -4,6 +4,7 @@ import com.roomierent.backend.model.entity.Property;
 import com.roomierent.backend.model.entity.User;
 import com.roomierent.backend.model.entity.UserPreferences;
 import com.roomierent.backend.repository.PropertyRepository;
+import org.springframework.transaction.annotation.Transactional;
 import com.roomierent.backend.repository.UserPreferencesRepository;
 import com.roomierent.backend.repository.UserRepository;
 import com.roomierent.backend.util.datastructures.PropertyGraph;
@@ -56,6 +57,7 @@ public class RecommendationManager {
      * @param limit Número máximo de recomendaciones
      * @return Lista de propiedades recomendadas
      */
+    @Transactional(readOnly = true)
     public List<Property> getRecommendationsForUser(String userEmail, int limit) {
         System.out.println("\n🎯 ============================================");
         System.out.println("   GENERANDO RECOMENDACIONES CON IA");
@@ -100,6 +102,7 @@ public class RecommendationManager {
     /**
      * Obtiene propiedades similares usando el grafo de similitud (KNN)
      */
+    @Transactional(readOnly = true)
     public List<Property> getSimilarProperties(Long propertyId, int limit) {
         System.out.println("\n🔍 ============================================");
         System.out.println("   BUSCANDO PROPIEDADES SIMILARES (KNN)");
