@@ -105,4 +105,10 @@ public interface PropertyRepository extends JpaRepository<Property, Long> {
             "AND p.area >= :minArea " +
             "ORDER BY p.area DESC")
     List<Property> findByMinArea(@Param("minArea") Double minArea);
+
+    @Query("SELECT DISTINCT p FROM Property p " +
+            "LEFT JOIN FETCH p.images " +
+            "LEFT JOIN FETCH p.owner " +
+            "WHERE p.status = 'AVAILABLE'")
+    List<Property> findAvailablePropertiesWithOwner();
 }

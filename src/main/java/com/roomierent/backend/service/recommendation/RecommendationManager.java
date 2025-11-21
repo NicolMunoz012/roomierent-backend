@@ -81,7 +81,7 @@ public class RecommendationManager {
                 ", Amenities:" + preferences.getAmenitiesWeight() + "]");
 
         // 3. Obtener propiedades disponibles
-        List<Property> availableProperties = propertyRepository.findAvailableProperties();
+        List<Property> availableProperties = propertyRepository.findAvailablePropertiesWithOwner();
 
         System.out.println("   📊 Propiedades disponibles: " + availableProperties.size());
         System.out.println("   🤖 Estrategia: " + currentStrategy.getStrategyName());
@@ -149,7 +149,7 @@ public class RecommendationManager {
         System.out.println("   ============================================");
 
         propertyGraph.clear();
-        List<Property> allProperties = propertyRepository.findAll();
+        List<Property> allProperties = propertyRepository.findAvailablePropertiesWithOwner();
 
         System.out.println("   📊 Total de propiedades: " + allProperties.size());
 
