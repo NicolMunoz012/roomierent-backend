@@ -82,6 +82,7 @@ public class PropertyService {
     /**
      * Obtiene todas las propiedades disponibles
      */
+    @Transactional(readOnly = true)
     public List<PropertyResponse> getAllAvailableProperties() {
         return propertyRepository.findAvailableProperties().stream()
                 .map(this::convertToResponse)
@@ -91,6 +92,7 @@ public class PropertyService {
     /**
      * Obtiene una propiedad por ID
      */
+    @Transactional(readOnly = true)
     public PropertyResponse getPropertyById(Long id) {
         Property property = propertyRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Propiedad no encontrada"));
