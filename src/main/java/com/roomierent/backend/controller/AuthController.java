@@ -60,9 +60,12 @@ public class AuthController {
     public ResponseEntity<AuthResponse> signup(@Valid @RequestBody SignupRequest request) {
         try {
             System.out.println("📥 Recibiendo petición de registro para: " + request.getEmail());
+            System.out.println("🔍 ROL RECIBIDO: " + request.getRole());  // ✅ AGREGAR
+            System.out.println("🔍 NOMBRE RECIBIDO: " + request.getName());  // ✅ AGREGAR
 
             AuthResponse response = authService.signup(request);
 
+            System.out.println("🔍 ROL EN RESPUESTA: " + response.getRole());  // ✅ AGREGAR
             System.out.println("✅ Usuario creado exitosamente: " + response.getEmail());
 
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
