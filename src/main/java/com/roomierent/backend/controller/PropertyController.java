@@ -64,12 +64,44 @@ public class PropertyController {
 
     @GetMapping("/my-properties")
     public ResponseEntity<List<PropertyResponse>> getMyProperties() {
+        System.out.println("========================================");
+        System.out.println("🎯🎯🎯 CONTROLLER /my-properties EJECUTADO");
+        System.out.println("========================================");
+
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !auth.isAuthenticated()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        System.out.println("🔍 Authentication object: " + auth);
+
+        if (auth == null) {
+            System.out.println("❌❌❌ Authentication es NULL");
+            return ResponseEntity.status(401).build();
         }
-        String email = auth.getName();
-        return ResponseEntity.ok(propertyService.getPropertiesByOwner(email));
+
+        System.out.println("🔍 Authentication class: " + auth.getClass().getName());
+        System.out.println("🔍 Principal class: " + auth.getPrincipal().getClass().getName());
+        System.out.println("🔍 Principal: " + auth.getPrincipal());
+
+        String email;
+        try {
+            email = auth.getName();
+            System.out.println("🔍 Email extraído: " + email);
+        } catch (Exception e) {
+            System.out.println("❌ Error extrayendo email: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500).build();
+        }
+
+        try {
+            List<PropertyResponse> properties = propertyService.getPropertiesByOwner(email);
+            System.out.println("✅ Propiedades obtenidas: " + properties.size());
+            System.out.println("========================================");
+            return ResponseEntity.ok(properties);
+        } catch (Exception e) {
+            System.out.println("❌❌❌ Error en PropertyService: " + e.getMessage());
+            e.printStackTrace();
+            System.out.println("========================================");
+            return ResponseEntity.status(500).build();
+        }
     }
 
     @DeleteMapping("/{id}")
