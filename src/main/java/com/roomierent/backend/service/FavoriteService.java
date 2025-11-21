@@ -85,17 +85,17 @@ public class FavoriteService {
         boolean exists = favoriteRepository.findByUserAndProperty(user, property).isPresent();
         return Map.of("favorite", exists);
     }
-
+    @Transactional(readOnly = true)
     public List<PropertyResponse> getFavorites(String userEmail) {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        return favoriteRepository.findByUser(user).stream()
+        return favoriteRepository.findByUserWithProperty(user).stream()
                 .map(Favorite::getProperty)
                 .map(propertyService::convertToResponse)
                 .collect(Collectors.toList());
     }
-
+    @Transactional(readOnly = true)
     public List<Long> getFavoriteIds(String userEmail) {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
