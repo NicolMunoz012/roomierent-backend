@@ -140,7 +140,6 @@ public class PropertyService {
      */
     public PropertyResponse convertToResponse(Property property) {
         try {
-            // ✅ Amenities seguro
             List<String> amenitiesList = new ArrayList<>();
             if (property.getAmenities() != null && !property.getAmenities().isEmpty()) {
                 amenitiesList = List.of(property.getAmenities().split(","));
@@ -159,7 +158,6 @@ public class PropertyService {
                         .collect(Collectors.toList());
             }
 
-            // ✅ Owner seguro
             Long ownerId = null;
             String ownerName = "Desconocido";
             String ownerEmail = "N/A";
