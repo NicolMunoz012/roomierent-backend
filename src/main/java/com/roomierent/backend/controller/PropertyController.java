@@ -44,7 +44,10 @@ public class PropertyController {
             @Valid @RequestBody PropertyRequest request
     ) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String email = auth.getName(); // ✅ EMAIL real del usuario autenticado
+        if (auth == null || !auth.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        String email = auth.getName();
 
         System.out.println("📥 Creando propiedad para: " + email);
 
