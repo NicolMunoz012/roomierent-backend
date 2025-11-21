@@ -51,6 +51,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/properties").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/properties/{id}").permitAll()
 
+                        // Reseñas públicas (lectura)
+                        .requestMatchers(HttpMethod.GET, "/api/reviews/property/**").permitAll()
+
                         // ❗ Protección real (sin conflictos)
                         .requestMatchers(HttpMethod.GET, "/api/properties/my-properties").authenticated()
 
@@ -58,7 +61,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/favorites/**").authenticated()
                         .requestMatchers("/api/recommendations/**").authenticated()
 
-                        // Todo lo demás requiere autenticación
+                        // Todo lo demás requiere autenticación (incluye POST/DELETE de reviews)
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->
