@@ -4,10 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
 
-/**
- * Entity Pattern: Representa una reseña en el dominio del negocio
- * Value Object Pattern: Rating (1-5) es un value object inmutable
- */
 @Entity
 @Table(name = "reviews", indexes = {
         @Index(name = "idx_property_created", columnList = "property_id, created_at"),
@@ -32,7 +28,7 @@ public class Review {
     private User user;
 
     @Column(nullable = false)
-    private Integer rating; // Value Object: 1-5 estrellas
+    private Integer rating;
 
     @Column(length = 1000)
     private String comment;
@@ -51,9 +47,6 @@ public class Review {
         validateRating();
     }
 
-    /**
-     * Template Method Pattern: Validación de rating
-     */
     private void validateRating() {
         if (rating == null || rating < 1 || rating > 5) {
             throw new IllegalArgumentException("Rating debe estar entre 1 y 5");

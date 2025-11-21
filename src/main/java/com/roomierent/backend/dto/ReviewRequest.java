@@ -1,13 +1,8 @@
-// ReviewRequest.java - Data Transfer Object Pattern
 package com.roomierent.backend.dto;
 
 import jakarta.validation.constraints.*;
 import lombok.*;
 
-/**
- * DTO Pattern: Objeto de transferencia para crear reseñas
- * Builder Pattern: Construcción flexible del objeto
- */
 @Data
 @Builder
 @NoArgsConstructor

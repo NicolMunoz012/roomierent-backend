@@ -1,12 +1,8 @@
-// ReviewResponse.java - DTO Pattern
 package com.roomierent.backend.dto;
 
 import lombok.*;
 import java.time.LocalDateTime;
 
-/**
- * DTO Pattern: Respuesta optimizada para el cliente
- */
 @Data
 @Builder
 @NoArgsConstructor
@@ -19,5 +15,5 @@ public class ReviewResponse {
     private Integer rating;
     private String comment;
     private LocalDateTime createdAt;
-    private boolean canDelete; // Strategy Pattern: indica si el usuario puede eliminar
+    private boolean canDelete;
 }

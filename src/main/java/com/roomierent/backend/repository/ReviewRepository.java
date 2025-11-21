@@ -8,9 +8,6 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Repository Pattern: Abstrae el acceso a datos de las reseñas
- */
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Long> {
 
